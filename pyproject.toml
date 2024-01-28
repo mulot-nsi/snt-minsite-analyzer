@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "snt-minisites-analyzer"
+version = "0.1.0"
+description = ""
+authors = ["Yannick Mulot <yannick.mulot@ac-creteil.fr>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+beautifulsoup4 = "^4.12.3"
+gspread = "^5.12.4"
+tinycss2 = "^1.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
