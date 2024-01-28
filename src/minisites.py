@@ -13,6 +13,7 @@ class ListFilesTask(analyzer.Task):
 class ProjetNameTask(analyzer.Task):
     def run(self, context, report):
         report.append(context.project_name)
+        return context.project_name
 
 
 class CountHTMLFilesTask(analyzer.Task):
@@ -79,12 +80,14 @@ class HyperlinkScoreTask(analyzer.Task):
             score += 2
 
         report.append(score / 5)
+        return score / 5
 
 
 class CheckIndexTask(analyzer.Task):
     def run(self, context, report):
         output = 1 if 'index.html' in [file.name.lower() for file in context.get_property('html_files')] else 0
         report.append(output)
+        return output
 
 
 class ImageScoreTask(analyzer.Task):
@@ -99,7 +102,10 @@ class ImageScoreTask(analyzer.Task):
 
             # check img tag
             for img in soup.find_all('img'):
-                images.append(img.get('src').strip())
+                src = img.get('src')
+                if src:
+                    images.append(src.strip())
+
 
         # check for image with bad path
         bad_src = [image for image in images if '\\' in image or image == '']
@@ -117,6 +123,7 @@ class ImageScoreTask(analyzer.Task):
             score += 1
 
         report.append(score / 3)
+        return score / 3
 
 
 class HTMLScoreTask(analyzer.Task):
@@ -154,11 +161,12 @@ class HTMLScoreTask(analyzer.Task):
         elif h1_count == 1:
             score += 1
 
-        page_without_paragraphe_ratio = page_without_paragraphe_count * 100 / page_count
+        page_without_paragraphe_ratio = page_without_paragraphe_count * 100 / page_count if page_count > 0 else 0
         if page_without_paragraphe_ratio < 50:
             score += 1
 
         report.append(score / 5)
+        return score / 5
 
 
 class CSSScoreTask(analyzer.Task):
@@ -185,3 +193,4 @@ class CSSScoreTask(analyzer.Task):
             score += 2
 
         report.append(score / 5)
+        return score / 5

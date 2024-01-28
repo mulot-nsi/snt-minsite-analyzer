@@ -20,22 +20,22 @@ if __name__ == '__main__':
     gdrive.open_spreadsheet("SNT 2023-2024 - Minisites")
     print("Google Sheet is open")
 
-    runner = analyzer.Runner(args.section)
+    runner = analyzer.Runner()
     runner.add_task(minisites.ListFilesTask())
-    # runner.add_task(minisites.ProjetNameTask(), 'LIV')
-    # runner.add_task(minisites.ExtractAuthorsTask(), 'EQUIPE')
-    runner.add_task(minisites.CountHTMLFilesTask(), 'EQUIPE_3')
+    # runner.add_task(minisites.ProjetNameTask(), 'LIV_4')
+    # runner.add_task(minisites.ExtractAuthorsTask())
+    # runner.add_task(minisites.CountHTMLFilesTask(), 'EQUIPE_3')
     # runner.add_task(minisites.CountCSSFilesTask(), 'CSS')
-    # runner.add_task(minisites.HyperlinkScoreTask(), 'HTML')
-    # runner.add_task(minisites.CheckIndexTask(), 'HTML')
-    # runner.add_task(minisites.ImageScoreTask(), 'HTML')
-    # runner.add_task(minisites.HTMLScoreTask(), 'HTML')
-    # runner.add_task(minisites.CSSScoreTask(), 'HTML')
-
+    # runner.add_task(minisites.CheckIndexTask(), 'CODE_1')
+    # runner.add_task(minisites.HyperlinkScoreTask(), 'CODE_2')
+    runner.add_task(minisites.ImageScoreTask(), 'CODE_3')
+    runner.add_task(minisites.HTMLScoreTask(), 'CODE_4')
+    runner.add_task(minisites.CSSScoreTask(), 'CODE_5')
 
     pupil_dirs = fs.get_pupil_dirs(args.path)
     if args.section is not None:
-        pupil_dirs = [item for item in pupil_dirs if item[0] == args.section]
+        # pupil_dirs = [item for item in pupil_dirs if item[0] == args.section]
+        pupil_dirs = [item for item in pupil_dirs if item[0] != 'SEC03']
 
     for pupil_dir in pupil_dirs:
         runner.run(pupil_dir)

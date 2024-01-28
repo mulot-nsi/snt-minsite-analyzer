@@ -48,8 +48,7 @@ class Report:
 
 
 class Runner:
-    def __init__(self, section):
-        self._section = section
+    def __init__(self):
         self._tasks = []
         self._reports = []
 
@@ -67,14 +66,14 @@ class Runner:
         else:
             context.project_dir = context.pupil_dir
 
-        report = Report(context.pupil_dir.name)
+        report = Report(context.section + ' - ' + context.pupil_dir.name)
         pupil = unicodedata.normalize('NFC', context.pupil_dir.name)
         self._reports.append(report)
 
         for tag, task in self._tasks:
             result = task.run(context, report)
             if tag and result:
-                gdrive.update_cell(self._section, pupil, tag, result)
+                gdrive.update_cell(context.section, pupil, tag, result)
 
     def report(self):
         width = max([len(report.name) for report in self._reports])
