@@ -4,6 +4,7 @@ import locale
 import unicodedata
 
 import fs
+import gdrive
 
 
 class Context:
@@ -47,14 +48,15 @@ class Report:
 
 
 class Runner:
-    def __init__(self):
+    def __init__(self, section):
+        self._section = section
         self._tasks = []
         self._reports = []
 
     def add_task(self, task, tag=None):
         self._tasks.append((tag, task))
 
-    def run(self, path, tag=None):
+    def run(self, path):
         context = Context()
         context.section, context.pupil_dir = path
 
@@ -66,11 +68,13 @@ class Runner:
             context.project_dir = context.pupil_dir
 
         report = Report(context.pupil_dir.name)
+        pupil = unicodedata.normalize('NFC', context.pupil_dir.name)
         self._reports.append(report)
 
-        for task_tag, task in self._tasks:
-            if tag is None or (task_tag is None or task_tag == tag):
-                task.run(context, report)
+        for tag, task in self._tasks:
+            result = task.run(context, report)
+            if tag and result:
+                gdrive.update_cell(self._section, pupil, tag, result)
 
     def report(self):
         width = max([len(report.name) for report in self._reports])

@@ -1,4 +1,5 @@
 import gspread
+import unicodedata
 
 _pupil_map = {}
 _data_map = {}
@@ -22,7 +23,7 @@ def open_spreadsheet(name, pupil_first_line=5):
         for line in range(pupil_first_line - 1, len(data)):
             firstname = data[line][1]
             lastname = data[line][0]
-            pupil_key = f'{lastname}_{firstname}'
+            pupil_key = unicodedata.normalize('NFC', f'{lastname}_{firstname}')
             _pupil_map[worksheet.title][pupil_key] = line + 1
 
         # map data
@@ -39,9 +40,12 @@ def update_cell(section, pupil, data, value):
     global spreadsheet
 
     if section not in _pupil_map or pupil not in _pupil_map[section]:
+        print(pupil)
+        print('Section not found or pupul not found')
         return False
 
     if section not in _data_map or data not in _data_map[section]:
+        print('Section not found or data not found')
         return False
 
     if section not in _batch_updates:

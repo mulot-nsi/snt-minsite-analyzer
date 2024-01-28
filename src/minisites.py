@@ -17,7 +17,10 @@ class ProjetNameTask(analyzer.Task):
 
 class CountHTMLFilesTask(analyzer.Task):
     def run(self, context, report):
-        report.append(len(context.get_property('html_files')))
+        html_file_count = len(context.get_property('html_files'))
+        report.append(html_file_count)
+        return html_file_count
+
 
 
 class CountCSSFilesTask(analyzer.Task):
