@@ -34,8 +34,8 @@ if __name__ == '__main__':
 
     pupil_dirs = fs.get_pupil_dirs(args.path)
     if args.section is not None:
-        # pupil_dirs = [item for item in pupil_dirs if item[0] == args.section]
-        pupil_dirs = [item for item in pupil_dirs if item[0] != 'SEC03']
+        pupil_dirs = [item for item in pupil_dirs if item[0] == args.section]
+        # pupil_dirs = [item for item in pupil_dirs if item[0] != 'SEC03']
 
     for pupil_dir in pupil_dirs:
         runner.run(pupil_dir)

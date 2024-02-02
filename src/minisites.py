@@ -117,13 +117,11 @@ class ImageScoreTask(analyzer.Task):
 
         # count images
         image_count = len(images)
-        if image_count >= page_count:
-            score += 2
-        elif image_count == 1:
+        if image_count >= 1:
             score += 1
 
-        report.append(score / 3)
-        return score / 3
+        report.append(score / 2)
+        return score / 2
 
 
 class HTMLScoreTask(analyzer.Task):
