@@ -83,10 +83,28 @@ class Runner:
 
 
 class Task:
-    def __init__(self):
-        pass
+    def run(self, context, report):
+        raise NotImplementedError
+
+
+class ScoringTask:
+    def _reset(self):
+        self._score = 0
+        self._total = 0
 
     def run(self, context, report):
+        self._reset()
+        self.score(context)
+        score = self._score / self._total
+        report.append(score)
+        return score
+
+    def score_if(self, condition, amount=1):
+        self._total += amount
+        if condition:
+            self._score += amount
+
+    def score(self, context):
         raise NotImplementedError
 
 

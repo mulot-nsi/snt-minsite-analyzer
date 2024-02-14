@@ -23,7 +23,6 @@ class CountHTMLFilesTask(analyzer.Task):
         return html_file_count
 
 
-
 class CountCSSFilesTask(analyzer.Task):
     def run(self, context, report):
         report.append(len(context.get_property('css_files')))
@@ -45,56 +44,61 @@ class ExtractAuthorsTask(analyzer.Task):
         report.append('|'.join(authors))
 
 
-class HyperlinkScoreTask(analyzer.Task):
-    def run(self, context, report):
+def _is_local_url(url):
+    return (not url.startswith('http') and
+            not url.startswith('#') and
+            not url.startswith('data') and
+            not url.startswith('.') and
+            url.endswith('.html'))
+
+
+class HyperlinkScoreTask(analyzer.ScoringTask):
+    def score(self, context):
         pages = []
         urls = []
-        score = 0
 
+        # Extrait le nom des pages et les urls à partir des balises <a>
         for html_file in context.get_property('html_files'):
             pages.append(html_file.name.lower())
 
             soup = BeautifulSoup(html_file.read_text(), 'html.parser')
             for tag in soup.find_all('a'):
                 if tag.get('href'):
-                    urls.append(tag.get('href').strip())
+                    urls.append(tag.get('href').strip().lower())
 
-        # Remove external urls
-        local_urls = [url for url in urls if not url.startswith('http')]
-        if len(local_urls) != len(urls):
-            score += 2
+        # Vérifie la présence d'URL vers des pages externes.
+        remote_urls = [url for url in urls if url.startswith('http')]
+        self.score_if(len(remote_urls) > 0)
 
-        # cleanup
-        local_urls = [url.lower() for url in local_urls if not url.startswith('data') and not url.startswith('.')]
-        local_urls_count = len(local_urls)
+        # Nettoyage des urls internes
+        local_urls = [url for url in urls if _is_local_url(url)]
+        local_url_count = len(local_urls)
 
-        # Check if urls starting with file://
+        # Vérifie l'absence d'urls de type file://
         local_urls = [url for url in local_urls if not url.startswith('file://')]
-        if len(local_urls) == local_urls_count:
-            score += 1
+        self.score_if(len(local_urls) == local_url_count)
 
-        # Check if url to all pages
+        # Vérifie l'absence de liens vers des pages locales inconnues
         unknown_pages = [url for url in local_urls if url not in pages]
+        self.score_if(len(unknown_pages) == 0)
+
+        # Vérifie que toutes les pages soient bien liées
         unlinked_pages = [page for page in pages if page not in local_urls]
-        if len(unknown_pages) == 0 and len(unlinked_pages) == 0:
-            score += 2
-
-        report.append(score / 5)
-        return score / 5
+        self.score_if(len(unlinked_pages) == 0)
 
 
-class CheckIndexTask(analyzer.Task):
-    def run(self, context, report):
-        output = 1 if 'index.html' in [file.name.lower() for file in context.get_property('html_files')] else 0
-        report.append(output)
-        return output
+class CheckIndexTask(analyzer.ScoringTask):
+    """
+    Vérifie si le fichier index.html existe bien
+    """
+
+    def score(self, context):
+        self.score_if('index.html' in [file.name.lower() for file in context.get_property('html_files')])
 
 
 class ImageScoreTask(analyzer.Task):
     def run(self, context, report):
-        page_count = len(context.get_property('html_files'))
         images = []
-
         score = 0
 
         for html_file in context.get_property('html_files'):
@@ -105,7 +109,6 @@ class ImageScoreTask(analyzer.Task):
                 src = img.get('src')
                 if src:
                     images.append(src.strip())
-
 
         # check for image with bad path
         bad_src = [image for image in images if '\\' in image or image == '']
