@@ -122,47 +122,54 @@ class ImageScoreTask(analyzer.ScoringTask):
         remote_images = [image for image in images if image.startswith('http')]
         self.score_if(len(remote_images) == 0)
 
-class HTMLScoreTask(analyzer.Task):
-    def run(self, context, report):
+
+def _get_tag_text(soup, tag, exclude=None):
+    tag = soup.find(tag)
+    if tag is None:
+        return None
+
+    text = tag.getText()
+    if exclude and text in exclude:
+        return None
+
+    return text
+
+
+class HTMLScoreTask(analyzer.ScoringTask):
+    def score(self, context):
         page_count = len(context.get_property('html_files'))
         titles = []
         h1_tags = []
         page_without_paragraphe_count = 0
-        score = 0
 
         for html_file in context.get_property('html_files'):
             soup = BeautifulSoup(html_file.read_text(), 'html.parser')
 
-            excluded_titles = ["Titre dans l'onglet du navigateur", "Titre d'une page secondaire"]
-            titles = [title.getText() for title in soup.find_all('title')]
-            titles = [title for title in titles if title not in excluded_titles]
+            forbidden_titles = ["Titre dans l'onglet du navigateur", "Titre d'une page secondaire"]
+            title = _get_tag_text(soup, 'title', forbidden_titles)
+            if title is not None:
+                titles.append(title)
 
-            h1_tags = [title.getText() for title in soup.find_all('h1')]
-            h1_tags = [text for text in h1_tags if text not in excluded_titles]
+            forbidden_titles = ["Titre dans l'onglet du navigateur", "Titre d'une page secondaire"]
+            title = _get_tag_text(soup, 'h1', forbidden_titles)
+            if title is not None:
+                h1_tags.append(title)
 
             if len(soup.find_all('p')) == 0:
                 page_without_paragraphe_count += 1
 
-        print(context.pupil_dir, page_without_paragraphe_count)
+        print(context.project_name, h1_tags)
 
         title_count = len(titles)
-        if title_count == page_count:
-            score += 2
-        elif title_count == 1:
-            score += 1
+        self.score_if(title_count >= 1, amount=2)
+        self.score_if(title_count == page_count)
 
         h1_count = len(h1_tags)
-        if h1_count == page_count:
-            score += 2
-        elif h1_count == 1:
-            score += 1
+        self.score_if(h1_count >= 1, amount=2)
+        self.score_if(h1_count == page_count)
 
         page_without_paragraphe_ratio = page_without_paragraphe_count * 100 / page_count if page_count > 0 else 0
-        if page_without_paragraphe_ratio < 50:
-            score += 1
-
-        report.append(score / 5)
-        return score / 5
+        self.score_if(page_without_paragraphe_ratio <= 50)
 
 
 class CSSScoreTask(analyzer.Task):
