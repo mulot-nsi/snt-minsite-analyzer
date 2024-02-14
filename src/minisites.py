@@ -96,11 +96,11 @@ class CheckIndexTask(analyzer.ScoringTask):
         self.score_if('index.html' in [file.name.lower() for file in context.get_property('html_files')])
 
 
-class ImageScoreTask(analyzer.Task):
-    def run(self, context, report):
+class ImageScoreTask(analyzer.ScoringTask):
+    def score(self, context):
         images = []
-        score = 0
 
+        # Extrait toutes les urls d'image.
         for html_file in context.get_property('html_files'):
             soup = BeautifulSoup(html_file.read_text(), 'html.parser')
 
@@ -110,22 +110,17 @@ class ImageScoreTask(analyzer.Task):
                 if src:
                     images.append(src.strip())
 
-        # check for image with bad path
+        # Vérifie l'absence de chemins locaux
         bad_src = [image for image in images if '\\' in image or image == '']
-        if len(bad_src) == 0:
-            score += 1
+        self.score_if(len(bad_src) == 0)
 
-        # cleanup images
+        # Nettoyage de la liste des images et vérification qu'il en reste encore.
         images = [image for image in images if image != '']
+        self.score_if(len(images) > 0)
 
-        # count images
-        image_count = len(images)
-        if image_count >= 1:
-            score += 1
-
-        report.append(score / 2)
-        return score / 2
-
+        # Vérification que toutes les images aient bien été téléchargées.
+        remote_images = [image for image in images if image.startswith('http')]
+        self.score_if(len(remote_images) == 0)
 
 class HTMLScoreTask(analyzer.Task):
     def run(self, context, report):
