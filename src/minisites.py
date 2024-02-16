@@ -158,8 +158,6 @@ class HTMLScoreTask(analyzer.ScoringTask):
             if len(soup.find_all('p')) == 0:
                 page_without_paragraphe_count += 1
 
-        print(context.project_name, h1_tags)
-
         title_count = len(titles)
         self.score_if(title_count >= 1, amount=2)
         self.score_if(title_count == page_count)
@@ -172,10 +170,8 @@ class HTMLScoreTask(analyzer.ScoringTask):
         self.score_if(page_without_paragraphe_ratio <= 50)
 
 
-class CSSScoreTask(analyzer.Task):
-    def run(self, context, report):
-        score = 0
-
+class CSSScoreTask(analyzer.ScoringTask):
+    def score(self, context):
         selectors = []
         already_exists = ['h2', '.texte-mis-en-forme-exemple', '.titre-page-exemple', '.petite-image-exemple', 'table',
                           'td']
@@ -186,14 +182,6 @@ class CSSScoreTask(analyzer.Task):
         type_selectors = [item for item in selectors if not item.startswith('.')]
         class_selectors = [item for item in selectors if item.startswith('.')]
 
-        if len(type_selectors) > 0:
-            score += 1
-
-        if len(class_selectors) > 0:
-            score += 2
-
-        if len(selectors) >= 4:
-            score += 2
-
-        report.append(score / 5)
-        return score / 5
+        self.score_if(len(type_selectors) > 0)
+        self.score_if(len(class_selectors) > 0, amount=2)
+        self.score_if(len(selectors) >= 4, amount=2)
