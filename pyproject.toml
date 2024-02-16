@@ -10,6 +10,9 @@ python = "^3.11"
 beautifulsoup4 = "^4.12.3"
 gspread = "^5.12.4"
 tinycss2 = "^1.2.1"
+google-auth = "^2.27.0"
+google-auth-oauthlib = "^1.2.0"
+google-auth-httplib2 = "^0.2.0"
 
 
 [build-system]

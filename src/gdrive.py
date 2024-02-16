@@ -1,3 +1,5 @@
+# from google.oauth2.credentials import Credentials
+# from google.auth.transport.requests import Request
 import gspread
 import unicodedata
 
@@ -12,7 +14,16 @@ def open_spreadsheet(name, pupil_first_line=5):
     global _data_map
     global spreadsheet
 
+    #credentials = gspread.auth.load_credentials()
+    #if credentials is None:
+
     gc = gspread.oauth()
+
+    #elif credentials.expired and credentials.refresh_token:
+    #    credentials.refresh(Request())
+    #    print(credentials.to_json())
+    #    gspread.auth.store_credentials(credentials)
+
     spreadsheet = gc.open(name)
 
     for worksheet in spreadsheet.worksheets():
